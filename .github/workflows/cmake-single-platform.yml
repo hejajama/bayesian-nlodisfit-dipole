@@ -28,6 +28,7 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      working-directory: ${{github.workspace}}/cpp/
       run: |
         sudo apt-get install libgsl-dev
         cmake -B ${{github.workspace}}/cpp/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -39,5 +40,5 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/cpp/
       # Execute the test program
-      run: ./cpp/build/bin/test
+      run: ./build/bin/test
 
