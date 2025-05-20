@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
+#include <cmath>
 using std::ifstream;
 using std::getline;
 using std::stringstream;
@@ -48,6 +49,9 @@ DataFile::DataFile(string fname)
                 case 3:
                     tmp = StrToReal(line.substr(3,line.length()-3));
                     y0 = std::log(1/tmp);
+                    if (y0 < 0 and y0 > -1e-10)
+                        y0=0;
+                    
                     if (y0 < 0 )
                     {
                         cerr <<"Warning: Invalid Y0 = " << y0 <<" " << LINEINFO << ". Using Y0=0!" << endl;
