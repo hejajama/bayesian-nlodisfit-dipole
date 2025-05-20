@@ -53,10 +53,10 @@ TEST(INTERPOLATE_GBW_DIPOLE)
     ASSERT_ALMOST_EQUAL(gbw, N.DipoleAmplitude(r,Y), 1e-4);
 }
 
-TEST(BAL_SD_MAP_QS)
+TEST(BAL_SD_MEDIAN_QS)
 {
     // Check that we reproduce the saturation scale reported in Table 1 of the paper
-    AmplitudeLib N("data/median_balsd_bk.dat");
+    AmplitudeLib N("../data/median_balsd_bk.dat");
     double Ns = 1-std::exp(-0.5);
     double Y = std::log(1/0.01);
     double qs2 = N.SaturationScale(Y, Ns);
