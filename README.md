@@ -3,6 +3,19 @@
 This repository contains Python and C++ codes to evaluate dipole amplitudes using grids from the NLO DIS fit published in C. Casuga et al.
 
 ## Python
+The python code can be found from the python folder. It requires numpy, scipy, and matplotlib packages.
+
+### Usage
+The code `python/read_bk.py` prints and plots the dipole amplitude with the BK datafile and rapidity value as input. Example usage:
+```bash
+python read_bk.py data/balsd/bk_map.dat 0
+```
+which plots the dipole amplitude N as function of r given Y = 0.
+
+Meanwhile, `python/read_bk_allparams.py` loads all BK datafiles in a folder and plots the mean and 2-sigma band N(r) given rapidity Y. Example usage:
+```bash
+python read_bk_allparams.py data/balsd/bks 0
+```
 
 ## C++
 The C++ code can be found from the cpp folder. It requires GSL, and CMake is used to compile the code.
