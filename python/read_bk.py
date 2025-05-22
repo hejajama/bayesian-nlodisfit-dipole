@@ -2,15 +2,14 @@ import sys
 import matplotlib.pyplot as plt
 from funcs import *
 
-def main(bk_file_dir, x):
+def main(bk_file_dir, Y):
     """
     Prints and plots the values of N(Y, r) for the given rapidity Y = ln(1/x).
 
     Args:
         bk_file_dir (str): Path to the file containing the BK data.
-        x (float): Value of Bjorken-x, where Y = ln(1/x).
+        Y (float): Value of rapidity Y.
     """
-    Y = np.log(1.0/x)
     r_values, N_values = get_Nr(bk_file_dir, Y)
     print(f"### for Y = {Y}")
     print("### r (GeV^-1), N")
@@ -19,7 +18,7 @@ def main(bk_file_dir, x):
 
     # Plot the results
     fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(r_values, N_values, linestyle='-', color='b',  label=f'Y=ln(1/{x})')
+    ax.plot(r_values, N_values, linestyle='-', color='b',  label=f'Y={Y}')
     ax.set_xscale('log')
     #ax.set_yscale('log')
     ax.set_xlabel(r'$r$ (GeV$^{-1}$)')
@@ -33,7 +32,7 @@ if __name__ == "__main__":
         print("Usage: python read_bk.py <bk_file_dir> <Y>")
         sys.exit(1)
     bk_file_dir = sys.argv[1]
-    x = float(sys.argv[2])
+    Y = float(sys.argv[2])
 
-    main(bk_file_dir, x)
+    main(bk_file_dir, Y)
 

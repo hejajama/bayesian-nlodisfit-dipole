@@ -83,15 +83,10 @@ def get_sd(values, mean):
 
     up_sd = np.std(values[values > mean])
     down_sd = np.std(values[values < mean])
-    print('how many values greater than mean', len(values[values > mean]))
-    print('how many values less than mean', len(values[values < mean]))
-    # print('up_sd', up_sd)
-    # print('down_sd', down_sd)
-    # print('mean', mean)
 
     return up_sd, down_sd
 
-def get_dipole_mean_upsd_downsd(bk_interpolators, rs, Y = np.log(1/0.01)):
+def get_dipole_mean_upsd_downsd(bk_interpolators, rs, Y = np.log(1/1)):
     '''
     Returns the mean and upper/lower standard deviation of func for a given an array of r and rapidity Y.
     '''
