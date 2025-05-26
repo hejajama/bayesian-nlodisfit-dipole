@@ -37,8 +37,14 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/cpp/build --config ${{env.BUILD_TYPE}}
 
-    - name: Test
+    - name: Test C++ code
       working-directory: ${{github.workspace}}/cpp/
       # Execute the test program
       run: ./build/bin/test
+
+    - name: Run Python unit tests
+      working-directory: ${{github.workspace}}/python/
+      run: |
+        pip install numpy scipy
+        python tests.py
 
