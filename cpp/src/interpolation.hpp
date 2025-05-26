@@ -26,8 +26,7 @@ using std::cerr;
  * datapoint, bspline fits a noisy dataset.
  */
 enum INTERPOLATION_METHOD {
-    INTERPOLATE_SPLINE,
-    INTERPOLATE_BSPLINE
+    INTERPOLATE_SPLINE
 };
 
 // Enable support for bspline interpolation, requires gsl 1.x, not gsl 2
@@ -157,16 +156,6 @@ class Interpolator
         // spline
         gsl_interp_accel *acc=NULL;
         gsl_spline *spline=NULL;
-#ifdef ENABLE_BSPLINE
-        // bspline
-        gsl_bspline_workspace *bw;
-        gsl_bspline_deriv_workspace *derbw;
-        gsl_vector *B;
-        gsl_vector *c;
-        gsl_matrix *X;
-        gsl_matrix *cov;
-        gsl_multifit_linear_workspace *mw;
-#endif
         static const int k=4;
         static const int ncoeffs = 12;
         static const int nbreak = ncoeffs-k+2;

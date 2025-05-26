@@ -3,7 +3,6 @@
  * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2011-2015
  */
 
-#include <gsl/gsl_bspline.h>
 #include <gsl/gsl_multifit.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_errno.h>
@@ -46,22 +45,6 @@ int Interpolator::Initialize()
                     acc=NULL;
                 }
                 break;
-            case INTERPOLATE_BSPLINE:
-#ifdef ENABLE_BSPLINE
-                gsl_bspline_free(bw);
-                gsl_bspline_deriv_free(derbw);
-                gsl_vector_free(B);
-                gsl_matrix_free(X);
-                gsl_vector_free(c);
-                
-                gsl_matrix_free(cov);
-                gsl_multifit_linear_free(mw);
-#endif
-                
-#ifndef ENABLE_BSPLINE
-                std:cerr << "Bspline interpolation is not enabled! Recompile with ENABLE_BSPLINE!" << std::endl;
-#endif
-                break;
         }
         ready=false;
         
@@ -72,59 +55,6 @@ int Interpolator::Initialize()
             acc = gsl_interp_accel_alloc();
             spline = gsl_spline_alloc(gsl_interp_cspline, points);
             status = gsl_spline_init(spline, xdata.data(), ydata.data(), points);
-            break;
-        case INTERPOLATE_BSPLINE:
-#ifdef ENABLE_BSPLINE
-            gsl_vector *x = gsl_vector_alloc(points);
-            gsl_vector *y = gsl_vector_alloc(points);
-            gsl_vector *w = gsl_vector_alloc(points);
-
-            for (int i=0; i< points; i++)
-            {
-                gsl_vector_set(x, i, xdata[i]);
-                gsl_vector_set(y, i, ydata[i]);
-                gsl_vector_set(w, i, 1.0);
-            }
-     
-            /* allocate a cubic bspline workspace (k = 4) */
-            bw = gsl_bspline_alloc(k, nbreak);
-            derbw = gsl_bspline_deriv_alloc(k);
-            B = gsl_vector_alloc(ncoeffs);
-       
-            X = gsl_matrix_alloc(points, ncoeffs);
-            c = gsl_vector_alloc(ncoeffs);
-       
-            cov = gsl_matrix_alloc(ncoeffs, ncoeffs);
-            mw = gsl_multifit_linear_alloc(points, ncoeffs);
-     
-     
-            // use uniform breakpoints
-            gsl_bspline_knots_uniform(xdata[0], xdata[points-1], bw);
-     
-            /* construct the fit matrix X */
-            for (int i = 0; i < points; ++i)
-            {
-               double xi = gsl_vector_get(x, i);
-             
-               /* compute B_j(xi) for all j */
-               gsl_bspline_eval(xi, B, bw);
-             
-               /* fill in row i of X */
-               for (int j = 0; j < ncoeffs; ++j)
-               {
-                  double Bj = gsl_vector_get(B, j);
-                  gsl_matrix_set(X, i, j, Bj);
-               }
-            }
-     
-            /* do the fit */
-            double chisq;
-            gsl_multifit_wlinear(X, w, y, c, cov, &chisq, mw);
-
-            gsl_vector_free(x);
-            gsl_vector_free(y);
-            gsl_vector_free(w);
-#endif
             break;
     }
     ready=true;
@@ -182,18 +112,6 @@ double Interpolator::Evaluate(double x)
                  exit(1);
             }
             break;
-        case INTERPOLATE_BSPLINE:
-#ifdef ENABLE_BSPLINE
-            gsl_bspline_eval(x, B, bw);
-            gsl_multifit_linear_est(B, c, cov, &res, &yerr);
-
-            /*if (std::abs(yerr/res)>0.05 )
-            {
-                cerr << "Interpolation failed at " << LINEINFO << ": bspline result "
-                << res << " pm " << yerr << " relerr " << std::abs(yerr/res) << endl;
-            }*/
-#endif
-            break;
         default:
             cerr << "Interpolation method is invalid! " << LINEINFO << endl;
             exit(1);
@@ -218,17 +136,9 @@ double Interpolator::Derivative(double x)
         case INTERPOLATE_SPLINE:
             status = gsl_spline_eval_deriv_e(spline, x, acc, &res);
             break;
-        case INTERPOLATE_BSPLINE:
-#ifdef ENABLE_BSPLINE
-            gsl_matrix* mat = gsl_matrix_alloc(nbreak+k-2, 2);
-            gsl_bspline_deriv_eval(x, 1, mat, bw, derbw);
-            for (int i=0; i<ncoeffs; i++)
-            {
-                res += gsl_vector_get(c, i)*gsl_matrix_get(mat, i, 1);
-            }
-            gsl_matrix_free(mat);
-#endif
-            return res;
+        default:
+            cerr << "Derivative is not implemented for this interpolation method!" << " " << LINEINFO << endl;
+            exit(1);
     }
     if (status)
         cerr << "An error occurred while evaluating the derivative at x=" << x
@@ -244,10 +154,6 @@ double Interpolator::Derivative2(double x)
     {
         case INTERPOLATE_SPLINE:
             status = gsl_spline_eval_deriv2_e(spline, x, acc, &res);
-            break;
-        case INTERPOLATE_BSPLINE:
-            cerr << "2nd derivative is not implemented for BSPLINE interpolation!"
-            << " " << LINEINFO << endl;
             break;
     }
 
@@ -348,8 +254,7 @@ Interpolator::Interpolator(const std::vector<double> &x, const std::vector<doubl
 void Interpolator::SetMethod(INTERPOLATION_METHOD m)
 {
     method = m;
-    if (m == INTERPOLATE_BSPLINE)
-        cerr << "BSPLINE interpolation should be tested in more detail before serious usage..." << endl;
+    
 }
 
 void Interpolator::Clear()
@@ -367,18 +272,6 @@ void Interpolator::Clear()
                 gsl_interp_accel_free(acc);
                 acc=NULL;
             }
-            break;
-        case INTERPOLATE_BSPLINE:
-#ifdef ENABLE_BSPLINE
-            gsl_bspline_free(bw);
-            gsl_bspline_deriv_free(derbw);
-            gsl_vector_free(B);
-            gsl_matrix_free(X);
-            gsl_vector_free(c);
-            
-            gsl_matrix_free(cov);
-            gsl_multifit_linear_free(mw);
-#endif
             break;
     }
 }
