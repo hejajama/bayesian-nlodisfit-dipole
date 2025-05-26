@@ -1,6 +1,6 @@
-# Read the BK evolved dipole amplitude from a datafile
+# Read the BK evolved dipole amplitude from a datafile and construct an interpolator
 #
-# C. Casuga, H. Männinen and H. Mäntysaari, 2025
+# C. Casuga, H. Hänninen and H. Mäntysaari, 2025
 
 import numpy as np
 import scipy.interpolate as interpolate

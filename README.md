@@ -6,6 +6,19 @@ This repository contains Python and C++ codes to evaluate dipole amplitudes usin
 The python code can be found from the python folder. It requires numpy, scipy, and matplotlib packages.
 
 ### Usage
+The necessary code to read in the BK evolved dipole amplitudes and construct an interpolator (in both dipole size $r$ and evolutoin rapidity $Y$) can be found from `python/nlodipole.py`. Typical usecase is demonstrated below:
+```python
+import nlodipole
+
+bk_file = "/path/to/bk_datafile.dat"
+# Construct interpolator
+interpolator = nlodipole.ReadBKDipole(bk_file)
+
+# Evaluate the dipole
+print(f"N(r=0.2GeV^-1, Y=1) = {interpolator(0.2,1)}")
+```
+Additional examples can be found from `python/read_bk.py` and `python/read_bk_allparams.py`
+
 The code `python/read_bk.py` prints and plots the dipole amplitude with the BK datafile and rapidity value as input. Example usage:
 ```bash
 python read_bk.py data/balsd/bk_map.dat 0
