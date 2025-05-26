@@ -17,6 +17,14 @@ Meanwhile, `python/read_bk_allparams.py` loads all BK datafiles in a folder and 
 python read_bk_allparams.py data/balsd/bks 0
 ```
 
+### Python Unit Tests
+
+To run the Python unit tests, from the `python` folder run:
+```bash
+python tests.py
+```
+
+
 ## C++
 The C++ code can be found from the cpp folder. It requires GSL, and CMake is used to compile the code.
 
@@ -34,7 +42,7 @@ In order to check that the setup works without problems, run unit tests by runni
 ```bash
 ./build/bin/test
 ```
-All tests should pass. The tests cover internal code dynamcis and also reproduce some numbers reported in the publication.
+All tests should pass. The tests cover internal code dynamics and also reproduce some numbers reported in the publication.
 
 There is also an example code `cpp/src/dipole_amplitude.cpp` that is compiled to produce the binary `build/bin/dipole`. That code takes as an input the BK datafile:
 ```bash
@@ -58,3 +66,14 @@ cout << "N(r=0.4 GeV^-1, Y=0.3) = " << dipole.DipoleAmplitude(0.4, Y) << endl;
 // to speed up the evaluation one can initialize the interpolation first
 dipole.InitializeInterpolation(Y);
 ```
+
+## License
+
+[![CC BY 4.0][cc-by-shield]][cc-by]
+
+This work is licensed under a
+[Creative Commons Attribution 4.0 International License][cc-by].
+
+
+[cc-by]: https://creativecommons.org/licenses/by/4.0/
+[cc-by-shield]: https://licensebuttons.net/l/by/4.0/80x15.png
