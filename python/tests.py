@@ -48,6 +48,16 @@ class TestNlodipole(unittest.TestCase):
         dipval=interpolator_median(Y, np.sqrt(2/true_qs2_median))
         self.assertAlmostEqual(dipval, 1 - np.exp(-0.5), places=2)
 
+    def test_interpolation_boundaries(self):
+        bk_file_dir = "../data/balsd/bk_map.dat"
+        interpolator = nlodipole.ReadBKDipole(bk_file_dir)
+
+         # Check that we get NaN outside the range of the interpolator
+        self.assertTrue(np.isnan( interpolator(1, 1e-20) )) # small r
+        self.assertTrue(np.isnan( interpolator(1, 1e20) )) # large r
+        self.assertTrue(np.isnan( interpolator(-1, 2) )) # negative Y = before initial condition
+        self.assertTrue(np.isnan( interpolator(9999, 2) )) # too large Y
+
 
     def test_parent_qs(self):
         # Test the parent Q_s^2 for the Balitsky-Satya parent dipole

@@ -46,7 +46,7 @@ def ReadBKDipole(thefile): #
             rgrid.append(r)
             ygrid.append(y)
     
-    interpolator = interpolate.CloughTocher2DInterpolator((ygrid, rgrid), N_values.flatten(), fill_value=1.0)
+    interpolator = interpolate.CloughTocher2DInterpolator((ygrid, rgrid), N_values.flatten(), rescale=True)
     
     return interpolator
 
