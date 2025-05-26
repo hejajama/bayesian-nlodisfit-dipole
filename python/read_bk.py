@@ -1,6 +1,6 @@
 import sys
 import matplotlib.pyplot as plt
-from funcs import *
+import nlodipole 
 
 def main(bk_file_dir, Y):
     """
@@ -10,7 +10,7 @@ def main(bk_file_dir, Y):
         bk_file_dir (str): Path to the file containing the BK data.
         Y (float): Value of rapidity Y.
     """
-    r_values, N_values = get_Nr(bk_file_dir, Y)
+    r_values, N_values = nlodipole.get_Nr(bk_file_dir, Y)
     print(f"### for Y = {Y}")
     print("### r (GeV^-1), N")
     for r, N in zip(r_values, N_values):
