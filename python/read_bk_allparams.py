@@ -1,5 +1,8 @@
+# C. Casuga, H. Hänninen and H. Mäntysaari, 2025
+
 import sys
 import matplotlib.pyplot as plt
+import numpy as np
 import nlodipole
 
 def main(bk_folder, Y):
@@ -7,7 +10,7 @@ def main(bk_folder, Y):
     Plots N(Y, r), mean and 2 sigma band, for the given rapidity Y 
 
     Args:
-        bk_file_dir (str): Path to the folder containing all BK files.
+        bk_folder (str): Path to the folder containing all BK files.
         Y (float): Value of rapidity Y.
     """
     rs = np.logspace(-3,2,50)

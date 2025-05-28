@@ -1,3 +1,5 @@
+# C. Casuga, H. Hänninen and H. Mäntysaari, 2025
+
 import sys
 import matplotlib.pyplot as plt
 import nlodipole 

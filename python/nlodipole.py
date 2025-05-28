@@ -1,5 +1,4 @@
-# Read the BK evolved dipole amplitude from a datafile and construct an interpolator
-#
+# Python code for reading and interpolating the dipole amplitude from BK solver output files.
 # C. Casuga, H. Hänninen and H. Mäntysaari, 2025
 
 import numpy as np
@@ -63,8 +62,17 @@ def get_Nr(bk_file_dir, Y, r_min = 1e-3, r_max = 1e2, r_points = 50):
     '''
     bk_interpolator = ReadBKDipole(bk_file_dir)
     r_values = np.logspace(np.log10(r_min), np.log10(r_max), r_points)
-    N_values = np.array([bk_interpolator(Y, r) for r in r_values])
-    return r_values, N_values
+    N_values = []
+    
+    # replacing nan values from interpolator with 1 is at large dipole sizes
+    for r in r_values:
+        N_val = bk_interpolator(Y, r)
+        if np.isnan(N_val):
+            N_values.append(1.0) if r > 1e1 else N_values.append(0.0)
+        else:
+            N_values.append(N_val)
+
+    return r_values, np.array(N_values)
 
 # load all bk files and make list of interpolators
 def get_dipole_interpolators(bk_folder):
@@ -102,7 +110,14 @@ def get_dipole_mean_upsd_downsd(bk_interpolators, rs, Y = np.log(1/1)):
         raise ValueError("r must be a 1D array")
     
     for r in rs:
-        val_per_r = np.array([bk_interpolators[i](Y, r) for i in range(len(bk_interpolators))])
+        val_per_r = []
+        for i in range(len(bk_interpolators)):
+            val = bk_interpolators[i](Y, r)
+            if np.isnan(val): # we again choose here to replace nan values with 1 at large dipole sizes
+                val_per_r.append(1.0) if r > 1e1 else val_per_r.append(0.0)
+            else:
+                val_per_r.append(val)
+        val_per_r = np.array(val_per_r)
         val_per_r_mean = np.mean(val_per_r)
         mean.append(val_per_r_mean)
         up_sd_r, down_sd_r = get_sd(val_per_r, val_per_r_mean)
