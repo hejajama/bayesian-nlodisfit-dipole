@@ -3,125 +3,139 @@
 
 import numpy as np
 import scipy.interpolate as interpolate
+import os
 
-def ReadBKDipole(thefile): # 
-    '''
-    Reads the dipole amplitude from the given datafile produced running BK solver from 
-    
-    Returns an interpolator for the dipole: N(Y, r), where r is in GeV^-1, and x = x_0*exp(Y)
-    '''
+class BKDipole:
 
-    with open(thefile) as f:
-        content = f.read().split("###")
-    
-    content = content[1:]   # gets rid of the stuff at the beginning
-    content = [i.split() for i in content] # cleans up lines
-    NrY_data = []
-    pars = []
-    for i in content:
+    def __init__(self, bk_file):
+        self.bkfile = bk_file
+        self.interpolator, self.Y_range, self.r_range = self.ReadBKDipole()
 
-        x = list(map(float, i))
-        if len(x) == 1:
-            pars.append(x)
-        else:
-            NrY_data.append(x)
-
+    def ReadBKDipole(self): # 
+        '''
+        Reads the dipole amplitude from the given datafile produced running BK solver from 
         
-    rmYs = np.array(NrY_data).T[1:]     # removes Y values
-    N_values = rmYs.T
-    Y_values = np.array(NrY_data).T[0]
+        Returns an interpolator for the dipole: N(Y, r), where r is in GeV^-1, and x = x_0*exp(Y)
+        '''
 
-    pars = np.ndarray.flatten(np.array(pars))
-    minr = pars[0]
-    mult = pars[1]
-    n = int(pars[2])
-    r_values = np.array([minr*mult**i for i in range(n)])
-    
-    
-    rgrid=[]
-    ygrid=[]
-    for y in Y_values:
-        for r in r_values:
-            rgrid.append(r)
-            ygrid.append(y)
-    
-    interpolator = interpolate.CloughTocher2DInterpolator((ygrid, rgrid), N_values.flatten(), rescale=True)
-    
-    return interpolator
+        with open(self.bkfile) as f:
+            content = f.read().split("###")
+        
+        content = content[1:]   # gets rid of the stuff at the beginning
+        content = [i.split() for i in content] # cleans up lines
+        NrY_data = []
+        pars = []
+        for i in content:
 
-def get_NRY(bk_file_dir, Y, r):
-    '''
-    Returns the value of N(Y,r) for the given Y and r
-    '''
-    bk_interpolator = ReadBKDipole(bk_file_dir)
-    return bk_interpolator(Y, r)
-
-def get_Nr(bk_file_dir, Y, r_min = 1e-3, r_max = 1e2, r_points = 50):
-    '''
-    Returns N for the given Y over points in r logspace
-    '''
-    bk_interpolator = ReadBKDipole(bk_file_dir)
-    r_values = np.logspace(np.log10(r_min), np.log10(r_max), r_points)
-    N_values = []
-    
-    # replacing nan values from interpolator with 1 is at large dipole sizes
-    for r in r_values:
-        N_val = bk_interpolator(Y, r)
-        if np.isnan(N_val):
-            N_values.append(1.0) if r > 1e1 else N_values.append(0.0)
-        else:
-            N_values.append(N_val)
-
-    return r_values, np.array(N_values)
-
-# load all bk files and make list of interpolators
-def get_dipole_interpolators(bk_folder):
-    '''       
-    Returns list of interpolators for each BK file given bk_folder.
-    '''
-    import os
-    bk_interpolators = []
-    bk_folder_list = os.listdir(bk_folder)
-    for i in range(len(bk_folder_list)):
-        print(f"Reading file: {i+1}/{len(bk_folder_list)}")
-        bk_file = os.path.join(bk_folder, os.listdir(bk_folder)[i])
-        bk_interpolators.append(ReadBKDipole(bk_file))
-
-    return bk_interpolators
-
-def get_sd(values, mean):
-    
-    ''' Returns standard deviation of values above or below mean '''
-
-    up_sd = np.std(values[values > mean])
-    down_sd = np.std(values[values < mean])
-
-    return up_sd, down_sd
-
-def get_dipole_mean_upsd_downsd(bk_interpolators, rs, Y = np.log(1/1)):
-    '''
-    Returns the mean and upper/lower standard deviation of func for a given an array of r and rapidity Y.
-    '''
-    mean = []
-    up_sd = []
-    down_sd = []
-
-    if len(rs.shape) != 1:
-        raise ValueError("r must be a 1D array")
-    
-    for r in rs:
-        val_per_r = []
-        for i in range(len(bk_interpolators)):
-            val = bk_interpolators[i](Y, r)
-            if np.isnan(val): # we again choose here to replace nan values with 1 at large dipole sizes
-                val_per_r.append(1.0) if r > 1e1 else val_per_r.append(0.0)
+            x = list(map(float, i))
+            if len(x) == 1:
+                pars.append(x)
             else:
-                val_per_r.append(val)
-        val_per_r = np.array(val_per_r)
-        val_per_r_mean = np.mean(val_per_r)
-        mean.append(val_per_r_mean)
-        up_sd_r, down_sd_r = get_sd(val_per_r, val_per_r_mean)
-        up_sd.append(up_sd_r)
-        down_sd.append(down_sd_r)
+                NrY_data.append(x)
+
+            
+        rmYs = np.array(NrY_data).T[1:]     # removes Y values
+        N_values = rmYs.T
+        Y_values = np.array(NrY_data).T[0]
+
+        pars = np.ndarray.flatten(np.array(pars))
+        minr = pars[0]
+        mult = pars[1]
+        n = int(pars[2])
+        r_values = np.array([minr*mult**i for i in range(n)])
+        
+        
+        rgrid=[]
+        ygrid=[]
+        for y in Y_values:
+            for r in r_values:
+                rgrid.append(r)
+                ygrid.append(y)
+        
+        self.interpolator = interpolate.CloughTocher2DInterpolator((ygrid, rgrid), N_values.flatten(), rescale=True)
+        self.Y_range = (np.min(Y_values), np.max(Y_values))
+        self.r_range = (np.min(r_values), np.max(r_values))
+        return self.interpolator, self.Y_range, self.r_range
+
+    def get_NrY(self, Y, r):
+        '''
+        Handles out of bounds values for Y and r etc, and returns the interpolated value of N(Y, r).
+        '''
+        N = self.interpolator(Y, r)
+        r_min, r_max = self.r_range
+        Y_min, Y_max = self.Y_range
+        r_divide = 1e1
+        r_lim = 1e5 # change if you prefer different max lim for r
+        
+        if r < 0 or Y < 0:
+            return np.nan
+            
+        if r < r_min or r > r_lim: # outside r bounds, return nan
+            return np.nan
+
+        if Y < Y_min or Y > Y_max: # outside Y interpolation bounds, return nan
+            return np.nan
+
+        if np.isnan(N): # here we choose to return 0 or 1 for the dipole amplitude, depending on dipole size
+            if r < r_divide and r > r_min:
+                return 0.0
+            if r > r_divide and r < r_lim:
+                return 1.0
+
+        return N
+
+    def get_Nr(self, Y, r_min = 1e-3, r_max = 1e2, r_points = 50):
+        '''
+        Returns N for the given Y over points in r logspace
+        '''
+        #bk_interpolator = ReadBKDipole(bk_file_dir)
+        r_values = np.logspace(np.log10(r_min), np.log10(r_max), r_points)
+        N_values = [self.get_NrY(Y, r) for r in r_values]
+        return r_values, np.array(N_values)
     
-    return np.array(mean), np.array(up_sd), np.array(down_sd)
+class BKDipoleEnsemble:
+
+    def __init__(self, bk_folder):
+        '''
+        Loads the BKDipoleEnsemble given bk_folder containing multiple BK files.
+        '''
+        self.bk_interpolators = []
+        bk_folder_list = [f for f in os.listdir(bk_folder) if f.endswith('.dat')]
+        for i, fname in enumerate(bk_folder_list):
+            print(f"Reading file: {i+1}/{len(bk_folder_list)}")
+            bk_file = os.path.join(bk_folder, fname)
+            self.bk_interpolators.append(BKDipole(bk_file))
+
+    def get_sd(self, values, mean):
+        
+        ''' Returns standard deviation of values above or below mean '''
+
+        up_sd = np.std(values[values > mean])
+        down_sd = np.std(values[values < mean])
+
+        return up_sd, down_sd
+
+    def get_dipole_mean_upsd_downsd(self, rs, Y = np.log(1/1)):
+        '''
+        Returns the mean and upper/lower standard deviation of func for a given an array of r and rapidity Y.
+        '''
+        mean = []
+        up_sd = []
+        down_sd = []
+
+        if len(rs.shape) != 1:
+            raise ValueError("r must be a 1D array")
+        
+        for r in rs:
+            val_per_r = []
+            for interpolator in self.bk_interpolators:
+                val_per_r.append(interpolator.get_NrY(Y, r))
+                
+            val_per_r = np.array(val_per_r)
+            val_per_r_mean = np.mean(val_per_r)
+            mean.append(val_per_r_mean)
+            up_sd_r, down_sd_r = self.get_sd(val_per_r, val_per_r_mean)
+            up_sd.append(up_sd_r)
+            down_sd.append(down_sd_r)
+        
+        return np.array(mean), np.array(up_sd), np.array(down_sd)

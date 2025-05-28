@@ -16,8 +16,8 @@ def main(bk_folder, Y):
     rs = np.logspace(-3,2,50)
     n_sigma = 2
     fig, ax = plt.subplots(figsize=(8, 6))
-    bk_interpolators = nlodipole.get_dipole_interpolators(bk_folder)
-    mean, up_sd, down_sd = nlodipole.get_dipole_mean_upsd_downsd(bk_interpolators, rs, Y = Y)
+    interpolators = nlodipole.BKDipoleEnsemble(bk_folder)
+    mean, up_sd, down_sd = interpolators.get_dipole_mean_upsd_downsd(rs, Y = Y)
     ax.plot(rs, mean, linestyle='-', color='b', label=f'Y={Y}')
     ax.fill_between(rs, mean + n_sigma*up_sd, mean - n_sigma*down_sd, color='b', alpha=0.3)
     ax.set_xscale('log')
