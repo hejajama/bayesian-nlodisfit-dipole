@@ -15,7 +15,8 @@ class BKDipole:
         '''
         Reads the dipole amplitude from the given datafile produced running BK solver from 
         
-        Returns an interpolator for the dipole: N(Y, r), where r is in GeV^-1, and x = x_0*exp(Y)
+        Returns an interpolator for the dipole: N(Y, r), where r is in GeV^-1, 
+        and Y is the evolution rapidity
         '''
 
         with open(self.bkfile) as f:
@@ -57,40 +58,41 @@ class BKDipole:
         self.r_range = (np.min(r_values), np.max(r_values))
         return self.interpolator, self.Y_range, self.r_range
 
-    def get_NrY(self, Y, r):
+    def N(self, Y, r):
         '''
-        Handles out of bounds values for Y and r etc, and returns the interpolated value of N(Y, r).
+        Returns the interpolated value of N(Y, r).
+        
+        Returns NaN before the initial condition (Y < 0) or if the requested
+        evolution rapidity is outside the range  
+
+        Args:
+            Y (float): Evolution rapidity
+            r (float): Dipole size in GeV^-1
         '''
-        N = self.interpolator(Y, r)
         r_min, r_max = self.r_range
         Y_min, Y_max = self.Y_range
-        r_divide = 1e1
-        r_lim = 1e5 # change if you prefer different max lim for r
         
         if r < 0 or Y < 0:
             return np.nan
-            
-        if r < r_min or r > r_lim: # outside r bounds, return nan
-            return np.nan
+        
+        if r > r_max and 0 < Y < Y_max: # large r, Y within limits
+            return 1.0 
+        
+        if 0 < r < r_min and 0 < Y < Y_max: # small r, Y within limits
+            return 0.0
 
-        if Y < Y_min or Y > Y_max: # outside Y interpolation bounds, return nan
-            return np.nan
-
-        if np.isnan(N): # here we choose to return 0 or 1 for the dipole amplitude, depending on dipole size
-            if r < r_divide and r > r_min:
-                return 0.0
-            if r > r_divide and r < r_lim:
-                return 1.0
+        N = self.interpolator(Y, r)
 
         return N
 
-    def get_Nr(self, Y, r_min = 1e-3, r_max = 1e2, r_points = 50):
+    def Nr(self, Y, r_min = 1e-3, r_max = 1e2, r_points = 50):
         '''
-        Returns N for the given Y over points in r logspace
+        Returns the dipole amplitude N evaluated at 
+        multiple points r [GeV^-1] logarithimically spaced between r_min and r_max.
         '''
         #bk_interpolator = ReadBKDipole(bk_file_dir)
         r_values = np.logspace(np.log10(r_min), np.log10(r_max), r_points)
-        N_values = [self.get_NrY(Y, r) for r in r_values]
+        N_values = [self.N(Y, r) for r in r_values]
         return r_values, np.array(N_values)
     
 class BKDipoleEnsemble:
@@ -129,7 +131,7 @@ class BKDipoleEnsemble:
         for r in rs:
             val_per_r = []
             for interpolator in self.bk_interpolators:
-                val_per_r.append(interpolator.get_NrY(Y, r))
+                val_per_r.append(interpolator.N(Y, r))
                 
             val_per_r = np.array(val_per_r)
             val_per_r_mean = np.mean(val_per_r)

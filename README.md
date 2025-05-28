@@ -11,11 +11,11 @@ The necessary code to read in the BK evolved dipole amplitudes and construct an 
 import nlodipole
 
 bk_file = "/path/to/bk_datafile.dat"
-# Construct interpolator
-interpolator = nlodipole.ReadBKDipole(bk_file)
+
+dipole = nlodipole.BKDipole(bk_file)
 
 # Evaluate the dipole
-print(f"N(r=0.2GeV^-1, Y=1) = {interpolator(0.2,1)}")
+print(f"N(r=0.2GeV^-1, Y=1) = {dipole.N(Y=1,r=0.2)}")
 ```
 Additional examples can be found from `python/read_bk.py` and `python/read_bk_allparams.py`
 
