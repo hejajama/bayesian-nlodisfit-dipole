@@ -61,7 +61,7 @@ class BKDipole:
     def N(self, Y, r):
         '''
         Returns the interpolated value of N(Y, r).
-        
+
         Returns NaN before the initial condition (Y < 0) or if the requested
         evolution rapidity is outside the range  
 
@@ -75,10 +75,13 @@ class BKDipole:
         if r < 0 or Y < 0:
             return np.nan
         
-        if r > r_max and 0 < Y < Y_max: # large r, Y within limits
+        if Y > Y_max:
+            return np.nan
+        
+        if r > r_max and 0 <= Y <= Y_max: # large r, Y within limits
             return 1.0 
         
-        if 0 < r < r_min and 0 < Y < Y_max: # small r, Y within limits
+        if 0 < r < r_min and 0 <= Y <= Y_max: # small r, Y within limits
             return 0.0
 
         N = self.interpolator(Y, r)
