@@ -81,7 +81,7 @@ class BKDipole:
         if r > r_max and 0 <= Y <= Y_max: # large r, Y within limits
             return 1.0 
         
-        if 0 < r < r_min and 0 <= Y <= Y_max: # small r, Y within limits
+        if 0 <= r < r_min and 0 <= Y <= Y_max: # small r, Y within limits
             return 0.0
 
         N = self.interpolator(Y, r)

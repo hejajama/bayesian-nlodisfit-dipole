@@ -56,9 +56,11 @@ class TestNlodipole(unittest.TestCase):
         self.assertTrue(np.isnan( interpolator.N(-1, 2) )) # negative Y = before initial condition
         self.assertTrue(np.isnan( interpolator.N(9999, 2) )) # too large Y
 
-        self.assertAlmostEqual(interpolator.N(1, 99999), 1, places=2) # large r, should return 1
-        self.assertAlmostEqual(interpolator.N(1, 1e-30), 0, places=2) # small r, should return 1
+        self.assertAlmostEqual(interpolator.N(1, 99999), 1, places=5) # large r, should return 1
+        self.assertAlmostEqual(interpolator.N(1, 1e-30), 0, places=5) # small r, should return 1
 
+        # r=0
+        self.assertAlmostEqual(interpolator.N(r=0, Y=1), 0, places=5)
     def test_parent_qs(self):
         # Test the parent Q_s^2 for the Balitsky-Satya parent dipole
         bk_file_dir = "../data/pd/bk_map.dat"

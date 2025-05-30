@@ -27,6 +27,7 @@ def main(bk_folder, Y):
     ax.set_xlim(0.5e-1, 1e2)
     ax.legend()
     fig.savefig(f'Nr_Y_{Y:.2f}_allparams.pdf')
+    print(f"Created plot: Nr_Y_{Y:.2f}_allparams.pdf")
 
 if __name__ == "__main__":
     

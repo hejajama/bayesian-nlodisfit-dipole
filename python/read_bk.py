@@ -13,7 +13,7 @@ def main(bk_file_dir, Y):
         Y (float): Value of rapidity Y.
     """
     interpolator = nlodipole.BKDipole(bk_file_dir)
-    r_values, N_values = interpolator.get_Nr(Y)
+    r_values, N_values = interpolator.Nr(Y)
     print(f"### for Y = {Y}")
     print("### r (GeV^-1), N")
     for r, N in zip(r_values, N_values):
